@@ -3,30 +3,42 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>پامپ‌یاب ایرانی — رایگان برای همه</title>
+  <title>پامپ‌یاب هوشمند ایرانی — FreeCrypme</title>
   <style>
+    * { box-sizing: border-box; }
     body {
       font-family: 'Segoe UI', Tahoma, sans-serif;
       background: #0f0f1b;
       color: #e0e0ff;
       margin: 0;
-      padding: 20px;
+      padding: 15px;
     }
     h1 {
       text-align: center;
       color: #4fc3f7;
-      margin-bottom: 10px;
+      margin: 10px 0;
+      font-size: 24px;
     }
     .subtitle {
       text-align: center;
       color: #aaa;
-      margin-bottom: 20px;
+      margin-bottom: 15px;
       font-size: 14px;
+    }
+    .search-box {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #444;
+      background: #1e1e2f;
+      color: white;
+      border-radius: 6px;
+      font-size: 15px;
     }
     .controls {
       display: flex;
-      gap: 12px;
-      margin: 15px 0;
+      gap: 10px;
+      margin: 10px 0 15px;
       flex-wrap: wrap;
       justify-content: center;
     }
@@ -41,13 +53,14 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      margin: 10px 0;
+      box-shadow: 0 0 8px rgba(0,0,0,0.3);
     }
     th, td {
-      padding: 12px 8px;
+      padding: 10px 6px;
       text-align: center;
       border-bottom: 1px solid #2a2a40;
+      font-size: 13px;
     }
     th {
       background: #1a1a2e;
@@ -63,15 +76,27 @@
     .neutral { color: #ff9800; }
     .status {
       text-align: center;
-      margin-top: 15px;
+      margin: 10px 0;
       color: #888;
-      font-size: 14px;
+      font-size: 13px;
+    }
+    .section-title {
+      margin-top: 30px;
+      padding-top: 15px;
+      border-top: 1px solid #333;
+      color: #4fc3f7;
+      font-size: 18px;
+      text-align: center;
     }
     .footer {
       text-align: center;
-      margin-top: 30px;
+      margin-top: 20px;
       color: #666;
-      font-size: 13px;
+      font-size: 12px;
+    }
+    @media (max-width: 768px) {
+      th, td { padding: 8px 4px; font-size: 12px; }
+      h1 { font-size: 20px; }
     }
   </style>
 </head>
@@ -79,16 +104,23 @@
   <h1>🇮🇷 پامپ‌یاب هوشمند ایرانی</h1>
   <div class="subtitle">رایگان • بدون نیاز به کامپیوتر • فقط با موبایل قابل استفاده</div>
 
+  <input type="text" id="globalSearch" class="search-box" placeholder="🔍 جستجوی کلی (نماد، سیگنال، RSI و...)">
+
   <div class="controls">
     <select id="filterSignal">
       <option value="all">همه سیگنال‌ها</option>
       <option value="PUMP">فقط پامپ</option>
       <option value="DUMP">فقط دامپ</option>
+      <option value="NEUTRAL">خنثی</option>
     </select>
     <input type="number" id="minVolume" placeholder="حداقل حجم (میلیون دلار)" value="0" />
-    <button onclick="manualLoad()">بارگذاری دستی</button>
+    <input type="number" id="minRSI" placeholder="حداقل RSI" min="0" max="100" />
+    <input type="number" id="maxRSI" placeholder="حداکثر RSI" min="0" max="100" value="100" />
+    <button onclick="loadSignals()">بارگذاری مجدد</button>
   </div>
 
+  <!-- بخش اصلی: همه ارزها -->
+  <h2 style="text-align:center; margin:15px 0; font-size:18px;">📊 همه ارزهای اسکن‌شده</h2>
   <table id="dataTable">
     <thead>
       <tr>
@@ -108,32 +140,65 @@
 
   <div class="status" id="status">آخرین بروزرسانی: —</div>
 
+  <!-- بخش ویژه: سیگنال‌های خودکار (پامپ/دامپ قوی) -->
+  <div class="section-title">🚨 سیگنال‌های هوشمند (پامپ/دامپ قوی)</div>
+  <table id="autoSignalsTable">
+    <thead>
+      <tr>
+        <th>نماد</th>
+        <th>قیمت</th>
+        <th>تغییر 1h</th>
+        <th>RSI</th>
+        <th>MACD Hist</th>
+        <th>سیگنال</th>
+      </tr>
+    </thead>
+    <tbody id="autoSignalsBody">
+      <tr><td colspan="6">در حال تحلیل سیگنال‌های قوی...</td></tr>
+    </tbody>
+  </table>
+
   <div class="footer">
-    💌 ساخته شده با عشق توسط هادی از تهران — برای کمک به هموطنان ایرانی
-    <br>
-    کد منبع: <a href="https://github.com/HadiTabatabaei111/Hadi-Ta" target="_blank" style="color:#4fc3f7;">github.com/HadiTabatabaei111/Hadi-Ta</a>
+    💌 ساخته شده با عشق توسط هادی از تهران — برای کمک به هموطنان ایرانی<br>
+    <a href="https://freecrypme-2-abr3.onrender.com" target="_blank" style="color:#4fc3f7;">freecrypme-2-abr3.onrender.com</a>
   </div>
 
   <script>
     let allCoins = [];
 
-    function updateTable() {
-      const signal = document.getElementById('filterSignal').value;
+    function filterData() {
+      const globalQuery = document.getElementById('globalSearch').value.toLowerCase();
+      const signalFilter = document.getElementById('filterSignal').value;
       const minVol = parseFloat(document.getElementById('minVolume').value) || 0;
+      const minRSI = parseFloat(document.getElementById('minRSI').value) || 0;
+      const maxRSI = parseFloat(document.getElementById('maxRSI').value) || 100;
 
       const filtered = allCoins.filter(coin => {
-        if (signal !== 'all' && coin.signal !== signal) return false;
+        // فیلتر کلی (جستجوی متنی)
+        const matchesSearch = 
+          coin.symbol.toLowerCase().includes(globalQuery) ||
+          coin.signal.toLowerCase().includes(globalQuery) ||
+          String(coin.rsi).includes(globalQuery) ||
+          String(coin.change_1h).includes(globalQuery);
+
+        if (!matchesSearch) return false;
+        if (signalFilter !== 'all' && coin.signal !== signalFilter) return false;
         if (coin.volume / 1e6 < minVol) return false;
+        if (coin.rsi < minRSI || coin.rsi > maxRSI) return false;
         return true;
       });
 
+      return filtered;
+    }
+
+    function renderMainTable(coins) {
       const tbody = document.getElementById('tableBody');
-      if (filtered.length === 0) {
+      if (coins.length === 0) {
         tbody.innerHTML = '<tr><td colspan="7">داده‌ای یافت نشد.</td></tr>';
         return;
       }
 
-      tbody.innerHTML = filtered.map(c => `
+      tbody.innerHTML = coins.map(c => `
         <tr>
           <td><b>${c.symbol}</b></td>
           <td>$${c.price.toLocaleString()}</td>
@@ -148,6 +213,40 @@
       `).join('');
     }
 
+    function renderAutoSignals() {
+      // فقط پامپ/دامپ با RSI خارج از محدوده + تغییر قیمت قوی
+      const strongSignals = allCoins.filter(c => 
+        (c.signal === "PUMP" || c.signal === "DUMP") &&
+        Math.abs(c.change_1h) >= 5 &&
+        (c.rsi <= 35 || c.rsi >= 65)
+      ).sort((a, b) => Math.abs(b.change_1h) - Math.abs(a.change_1h));
+
+      const tbody = document.getElementById('autoSignalsBody');
+      if (strongSignals.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6">هیچ سیگنال قوی‌ای یافت نشد.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = strongSignals.map(c => `
+        <tr>
+          <td><b>${c.symbol}</b></td>
+          <td>$${c.price.toLocaleString()}</td>
+          <td style="color:${c.change_1h >= 0 ? '#4caf50' : '#f44336'}">
+            ${c.change_1h >= 0 ? '+' : ''}${c.change_1h}%
+          </td>
+          <td>${c.rsi}</td>
+          <td>${c.macd_hist.toFixed(6)}</td>
+          <td class="${c.signal.toLowerCase()}">${c.signal}</td>
+        </tr>
+      `).join('');
+    }
+
+    function updateAll() {
+      const filtered = filterData();
+      renderMainTable(filtered);
+      renderAutoSignals();
+    }
+
     function loadSignals() {
       fetch('/signals.json?_=' + Date.now())
         .then(response => {
@@ -157,25 +256,27 @@
         .then(data => {
           allCoins = data.coins || [];
           document.getElementById('status').innerText = 'آخرین بروزرسانی: ' + data.last_update;
-          updateTable();
+          updateAll();
         })
         .catch(err => {
           document.getElementById('tableBody').innerHTML = 
             `<tr><td colspan="7">❌ ${err.message}</td></tr>`;
+          document.getElementById('autoSignalsBody').innerHTML = 
+            `<tr><td colspan="6">خطا در بارگذاری سیگنال‌ها</td></tr>`;
           console.error("خطا:", err);
         });
     }
 
-    function manualLoad() {
-      loadSignals();
-    }
-
-    document.getElementById('filterSignal').addEventListener('change', updateTable);
-    document.getElementById('minVolume').addEventListener('input', updateTable);
+    // متصل کردن eventها
+    document.getElementById('globalSearch').addEventListener('input', updateAll);
+    document.getElementById('filterSignal').addEventListener('change', updateAll);
+    document.getElementById('minVolume').addEventListener('input', updateAll);
+    document.getElementById('minRSI').addEventListener('input', updateAll);
+    document.getElementById('maxRSI').addEventListener('input', updateAll);
 
     // شروع اولیه
     loadSignals();
     setInterval(loadSignals, 15000); // هر 15 ثانیه
   </script>
 </body>
-  </html>
+</html>
